@@ -6,7 +6,7 @@ export default function ProjectCard({ project }) {
       )}
       <div className="project-body">
         <h2>{project.title}</h2>
-        <p>{project.description}</p>
+        <p>{project.description?.split(' ').slice(0, 15).join(' ')}{project.description?.split(' ').length > 15 ? '…' : ''}</p>
         {project.tags?.length > 0 && (
           <div className="tags">
             {project.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}

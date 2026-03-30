@@ -136,7 +136,7 @@ a:hover {
   transform: translateY(calc(-100% - 20px));
 }
 .navbar--scrolled {
-  background: rgba(236, 236, 236, 0.6);
+  background: rgba(236, 236, 236, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 2px 8px var(--border);
@@ -354,6 +354,18 @@ a:hover {
   line-height: 1.1;
   letter-spacing: -1.5px;
   color: var(--surface);
+  animation: hero_slide_up 4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hero_slide_up {
+  from {
+    /* opacity: 0; */
+    transform: translateY(60px);
+  }
+  to {
+    /* opacity: 1; */
+    transform: translateY(0);
+  }
 }
 
 .hero_sub {
@@ -1187,7 +1199,7 @@ a:hover {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
 .adv_card--glass {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.62);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.55);
