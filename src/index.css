@@ -887,6 +887,9 @@ a:hover {
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   padding: 35% 0;
 }
 .pv_list::-webkit-scrollbar {

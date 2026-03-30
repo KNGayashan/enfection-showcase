@@ -113,7 +113,7 @@ Description is truncated to 15 words with `…` ellipsis via `.split(' ').slice(
 
 **React Compiler** enabled via `babel-plugin-react-compiler` in `vite.config.js` — no need for manual `useMemo`/`useCallback`.
 
-**ESLint** uses flat config (`eslint.config.js`). Uppercase and underscore-prefixed vars are excluded from unused-vars. Array index keys in JSX are flagged (`javascript:S6479`) — use stable string IDs instead. Functions defined inside components are flagged for deep nesting (`javascript:S7721`) — keep helpers at module level.
+**ESLint** uses flat config (`eslint.config.js`). Uppercase and underscore-prefixed vars are excluded from unused-vars. Array index keys in JSX are flagged (`javascript:S6479`) — use stable string IDs instead. Functions defined inside components are flagged for deep nesting (`javascript:S7721`) — keep helpers at module level. Context files that export both a Provider and a hook must include `/* eslint-disable react-refresh/only-export-components */` at the top.
 
 **Vite base** is `/` for Vercel deployment. Change to `/subpath/` if self-hosting under a subdirectory.
 
