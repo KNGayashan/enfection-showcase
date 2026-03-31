@@ -8,18 +8,6 @@ const PARTICLE_COUNT = 10000
 
 // ── Helpers (module-level to avoid deep nesting) ──────────────────────────────
 
-function getSpherePoints() {
-  const pts = new Float32Array(PARTICLE_COUNT * 3)
-  const radius = 4
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const phi   = Math.acos(-1 + (2 * i) / PARTICLE_COUNT)
-    const theta = Math.sqrt(PARTICLE_COUNT * Math.PI) * phi
-    pts[i * 3]     = Math.cos(theta) * Math.sin(phi) * radius
-    pts[i * 3 + 1] = Math.sin(theta) * Math.sin(phi) * radius
-    pts[i * 3 + 2] = Math.cos(phi) * radius
-  }
-  return pts
-}
 
 function getScatterPoints() {
   const pts = new Float32Array(PARTICLE_COUNT * 3)
@@ -119,12 +107,7 @@ export default function ParticleEffect() {
 
     Promise.all([getLogoPoints(logoImg), getLogoPoints(momentroImg)]).then((results) => {
       const shapes = results.filter(Boolean)
-      const shapeSphere = getSpherePoints()
       tl = gsap.timeline({ repeat: -1 })
-
-      // Sphere → destroy
-      tl.call(() => morph(shapeSphere)).to({}, { duration: 6 })
-      tl.call(() => morph(getScatterPoints())).to({}, { duration: 3 })
 
       // Each available logo shape → destroy
       shapes.forEach((shape) => {

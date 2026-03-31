@@ -192,6 +192,17 @@ export default function FeaturedWorksSection() {
   function prev() { setCurrent(i => (i - 1 + SLIDES.length) % SLIDES.length) }
   function next() { setCurrent(i => (i + 1) % SLIDES.length) }
 
+  const touchStartX = useRef(null)
+
+  function onTouchStart(e) { touchStartX.current = e.touches[0].clientX }
+  function onTouchEnd(e) {
+    if (touchStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(dx) < 40) return
+    if (dx < 0) next(); else prev()
+  }
+
   return (
     <section id="work" className="featured_section">
       {view === 'projects' ? (
@@ -216,7 +227,7 @@ export default function FeaturedWorksSection() {
             </div>
           </div>
 
-          <div className="featured_track_wrap">
+          <div className="featured_track_wrap" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             <div className="featured_track" style={{ transform: `translateX(-${current * 100}%)` }}>
               {SLIDES.map((slide, i) => (
                 <div key={slide.id} className={`featured_card ${i % 2 === 1 ? 'featured_card--reverse' : ''}`}>
