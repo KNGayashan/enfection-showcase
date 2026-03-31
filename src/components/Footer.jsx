@@ -1,4 +1,4 @@
-import { FaFacebookF, FaLinkedinIn, FaInstagram, FaTiktok } from 'react-icons/fa'
+import { FaFacebookF, FaLinkedinIn, FaInstagram, FaTiktok, FaGithub } from 'react-icons/fa'
 
 const FOOTER_LINKS = [
   { label: 'Work',     href: '#work' },
@@ -9,10 +9,11 @@ const FOOTER_LINKS = [
 ]
 
 const SOCIALS = [
-  { icon: <FaFacebookF />,  href: '#', label: 'Facebook' },
-  { icon: <FaLinkedinIn />, href: '#', label: 'LinkedIn' },
-  { icon: <FaInstagram />,  href: '#', label: 'Instagram' },
-  { icon: <FaTiktok />,     href: '#', label: 'TikTok' },
+  { icon: <FaFacebookF />,  href: 'https://www.facebook.com/share/1L9CDV4K74/', label: 'Facebook' },
+  { icon: <FaLinkedinIn />, href: 'https://www.linkedin.com/showcase/enfection-labs/', label: 'LinkedIn' },
+  { icon: <FaInstagram />,  href: 'https://www.instagram.com/getenfected?igsh=ZmQ1MGo0YmJvc3Mz', label: 'Instagram' },
+  { icon: <FaTiktok />,  href: 'https://www.tiktok.com/@getenfected?_r=1&_t=ZS-9591qD0PKVh', label: 'TikTok' },
+  { icon: <FaGithub />, href: 'https://github.com/Enfection-Dev-Lab', label: 'GitHub' },
 ]
 
 export default function Footer() {
