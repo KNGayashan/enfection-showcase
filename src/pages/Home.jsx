@@ -24,9 +24,9 @@ export default function Home() {
       <ProjectsGridSection />
       <OurServiceSection/>
       <AdvantageSection/>
-      <OurClientsSection/>
-      <JoinUsSection/>
       <ReadyTextSliderSection/>
+      <JoinUsSection/>
+      <OurClientsSection/>
     </main>
     <Footer />
     </>

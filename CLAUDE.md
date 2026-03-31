@@ -17,6 +17,8 @@ React 19 + Vite 8 client showcase site. Plain JavaScript (JSX), no TypeScript.
 
 **Entry flow:** `index.html` → `src/main.jsx` → `src/App.jsx` (routing root)
 
+**Dependencies of note:** Three.js + GSAP (3D particle hero), `react-icons`, `react-router-dom` v7.
+
 ### Routing
 
 | Path | Description |
@@ -25,12 +27,12 @@ React 19 + Vite 8 client showcase site. Plain JavaScript (JSX), no TypeScript.
 | `/admin` | Admin login (`pages/admin/Login.jsx`) |
 | `/admin/dashboard` | Protected dashboard (`pages/admin/Dashboard.jsx`) |
 
-`ProtectedRoute` redirects unauthenticated users to `/admin`. `vercel.json` rewrites all paths to `index.html` for client-side routing to work on Vercel.
+`ProtectedRoute` redirects unauthenticated users to `/admin`. `vercel.json` rewrites all paths to `index.html` for client-side routing on Vercel.
 
 ### State / Context
 
 - **`AuthContext`** — admin session in `sessionStorage`. Checks `VITE_ADMIN_PASSWORD` env var (default: `admin123`).
-- **`ProjectContext`** — project CRUD persisted to `localStorage`. Exports `CATEGORIES = ['Games', 'Websites', 'Innovation']`. Both contexts wrap the app in `App.jsx`. localStorage is per-browser — there is no shared database.
+- **`ProjectContext`** — project CRUD persisted to `localStorage`. Exports `CATEGORIES = ['Games', 'Websites', 'Innovation']`. Both contexts wrap the app in `App.jsx`. localStorage is per-browser — there is no shared backend database.
 
 ### Page composition
 
@@ -71,7 +73,7 @@ Uses 4 copies of 8 logos and animates `translateX(-25%)` (= one full set). Four 
 Two views toggled by `view` state (`'carousel'` | `'projects'`):
 
 - **Carousel** — slides through 3 category cards (`SLIDES`), "Explore more" switches to projects view.
-- **ProjectsList** — bidirectional vertical scroll: title list (left) and image list (right) sync via `isSyncing` ref + `lockSync()` timeout to prevent feedback loops. `calcScrollOpacities` reads scroll position to apply opacity/scale; `snapToIdx` applies by index distance and scrolls the other panel. All panel helpers are module-level. Stale refs are cleared on `filtered.length` change; `syncTimer` is cleaned up on unmount.
+- **ProjectsList** — bidirectional vertical scroll: title list (left) and image list (right) sync via `isSyncing` ref + `lockSync()` timeout to prevent feedback loops. `calcScrollOpacities` reads scroll position to apply opacity/scale; `snapToIdx` applies by index distance and scrolls the other panel. All panel helpers are module-level. Stale refs are cleared on `filtered.length` change; `syncTimer` is cleaned up on unmount. On mobile, the image panel is hidden (`display: none`) — only the title list is shown.
 
 ### Projects grid section (`ProjectsGridSection.jsx`)
 
@@ -91,11 +93,11 @@ Two-row infinite slider. `ROW1 = [logo1–logo6]`, `ROW2 = [logo7–logo12]`, `S
 
 ### Ready Text Slider section (`ReadyTextSliderSection.jsx`)
 
-Scroll-driven horizontal text reveal. `COPIES = 4` copies of the phrase. `txStart = vw` (off-screen right), `txEnd = vw - phraseWidth` (✦ separator lands at right edge of viewport). `phraseWidth` is measured from DOM as `track.scrollWidth / COPIES`. Animation triggers when section top reaches 80% from viewport top.
+Scroll-driven horizontal text reveal. `COPIES = 4` copies of the phrase. The scroll listener maps section visibility to `translateX`: `txStart = vw` (track off-screen right), `txEnd = vw - phraseWidth` (first ✦ separator lands at the right viewport edge). `phraseWidth` is measured from the DOM as `track.scrollWidth / COPIES`. Animation triggers when section top reaches 80% from the viewport top.
 
 ### Join Us / Contact section (`JoinUsSection.jsx`)
 
-Contact form only — the scrolling text was moved to `ReadyTextSliderSection`. Form submits via `mailto:` URI built from `FormData`. Uses uncontrolled inputs (`name` attributes) with `htmlFor`/`id` pairs on all labels and inputs.
+Contact form only. Form submits via `mailto:` URI built from `FormData`. Uses uncontrolled inputs (`name` attributes) with `htmlFor`/`id` pairs on all labels and inputs.
 
 ### Admin dashboard (`Dashboard.jsx`)
 
@@ -103,7 +105,7 @@ Shared `ProjectForm` component handles both add and edit. Inline edit form rende
 
 ### Image uploads (admin dashboard)
 
-Uploads `POST` to `/showcase-uploads/` (Vite proxies to `https://projects.enfection.com/showcase-uploads/` in dev). Response JSON parsed for `url`, `imageUrl`, `path`, or `link`. Set `VITE_UPLOAD_URL` for production.
+Upload `POST` requests go to `/showcase-uploads/`. Response JSON is parsed for `url`, `imageUrl`, `path`, or `link` fields. Set `VITE_UPLOAD_URL` to override the endpoint in production.
 
 ### ProjectCard (`components/ProjectCard.jsx`)
 
@@ -113,10 +115,10 @@ Description is truncated to 15 words with `…` ellipsis via `.split(' ').slice(
 
 **React Compiler** enabled via `babel-plugin-react-compiler` in `vite.config.js` — no need for manual `useMemo`/`useCallback`.
 
-**ESLint** uses flat config (`eslint.config.js`). Uppercase and underscore-prefixed vars are excluded from unused-vars. Array index keys in JSX are flagged (`javascript:S6479`) — use stable string IDs instead. Functions defined inside components are flagged for deep nesting (`javascript:S7721`) — keep helpers at module level. Context files that export both a Provider and a hook must include `/* eslint-disable react-refresh/only-export-components */` at the top.
+**ESLint** uses flat config (`eslint.config.js`). The only custom rule in the project config is `no-unused-vars` with `varsIgnorePattern: '^[A-Z_]'` (uppercase and underscore-prefixed vars are ignored). The `react-refresh/only-export-components` rule comes from `eslint-plugin-react-refresh` — context files that export both a Provider and a hook must add `/* eslint-disable react-refresh/only-export-components */` at the top.
 
-**Vite base** is `/` for Vercel deployment. Change to `/subpath/` if self-hosting under a subdirectory.
+**SonarLint (IDE-only, not project ESLint):** The SonarLint VS Code extension adds additional diagnostics that show as warnings but are not enforced by `npm run lint`. Relevant rules encountered in this codebase: `S6479` (no array-index keys in JSX — use stable string IDs), `S7721` (no functions defined inside components — keep helpers at module level), `S7748` (no trailing zeros in numeric literals, e.g. `0.50` → `0.5`), `S3403` (avoid `===` comparisons that are always false due to type mismatch).
 
-**Vite dev proxy** — `/showcase-uploads/` → `https://projects.enfection.com`.
+**Vite base** is `/` for Vercel deployment. Change to `/subpath/` if self-hosting under a subdirectory (also update `vercel.json` or Nginx config accordingly).
 
 **Section IDs for anchor links:** `#work` (FeaturedWorks), `#projects` (ProjectsGrid), `#services` (OurService), `#about` (Advantage), `#contact` (JoinUs).
