@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useProjects } from '../context/ProjectContext'
 import gamedevImg from '../assets/images/featured/gamedev.png'
 import webdevImg from '../assets/images/featured/webdev.png'
@@ -28,91 +28,47 @@ const SLIDES = [
   },
 ]
 
-// Module-level helpers kept outside component to avoid ESLint deep-nesting warnings
-
-const TITLE_OPTS = { minOp: 0.12, opRate: 1.6, minSc: 0.72, scRate: 0.28 }
-const IMAGE_OPTS = { minOp: 0.15, opRate: 1.6, minSc: 0.78, scRate: 0.15 }
-// snapToIdx uses a softer opacity falloff than calcScrollOpacities because
-// index-distance is discrete (integers) vs continuous scroll ratios
-const SNAP_OPACITY_DAMPING = 0.38
-
-function calcScrollOpacities(container, refs, opts) {
-  const centerY = container.scrollTop + container.clientHeight / 2
-  let bestIdx = 0, bestDist = Infinity
-  refs.forEach((el, i) => {
-    if (!el) return
-    const dist = Math.abs((el.offsetTop + el.offsetHeight / 2) - centerY)
-    const ratio = dist / (container.clientHeight * 0.5)
-    el.style.opacity = Math.max(opts.minOp, 1 - ratio * opts.opRate)
-    el.style.transform = `scale(${Math.max(opts.minSc, 1 - ratio * opts.scRate)})`
-    if (dist < bestDist) { bestDist = dist; bestIdx = i }
-  })
-  return bestIdx
-}
-
-function snapToIdx(container, refs, idx, opts) {
-  refs.forEach((el, i) => {
-    if (!el) return
-    const dist = Math.abs(i - idx)
-    el.style.opacity = Math.max(opts.minOp, 1 - dist * opts.opRate * SNAP_OPACITY_DAMPING)
-    el.style.transform = `scale(${Math.max(opts.minSc, 1 - dist * opts.scRate)})`
-  })
-  const activeEl = refs[idx]
-  if (container && activeEl) {
-    container.scrollTo({
-      top: activeEl.offsetTop - container.clientHeight / 2 + activeEl.offsetHeight / 2,
-      behavior: 'smooth',
-    })
-  }
-}
-
 function openProjectLink(project) {
   if (project.link) window.open(project.link, '_blank', 'noopener,noreferrer')
 }
 
+function applyScale(bodyEl, rowEls) {
+  if (!bodyEl) return
+  if (window.innerWidth <= 768) {
+    rowEls.forEach(el => {
+      if (!el) return
+      el.style.transform = ''
+      el.style.opacity   = ''
+    })
+    return
+  }
+  const cRect  = bodyEl.getBoundingClientRect()
+  const center = cRect.top + cRect.height / 2
+  rowEls.forEach(el => {
+    if (!el) return
+    const rRect     = el.getBoundingClientRect()
+    const rowCenter = rRect.top + rRect.height / 2
+    const ratio     = Math.max(0, 1 - Math.abs(rowCenter - center) / (cRect.height * 0.4))
+    el.style.transform = `scaleX(${0.84 + 0.16 * ratio}) scaleY(${0.72 + 0.28 * ratio})`
+    el.style.opacity   = String(0.3 + 0.7 * ratio)
+  })
+}
 
-// ── Projects vertical scroll view ────────────────────────────────────────────
+// ── Projects list view ────────────────────────────────────────────────────────
 
 function ProjectsList({ category, onBack }) {
   const { projects } = useProjects()
   const filtered = projects.filter(p => p.category === category)
-  const listRef = useRef(null)
-  const itemRefs = useRef([])
-  const imgListRef = useRef(null)
-  const imgItemRefs = useRef([])
-  const isSyncing = useRef(false)
-  const syncTimer = useRef(null)
+  const bodyRef = useRef(null)
+  const rowRefs = useRef([])
 
-  function lockSync() {
-    isSyncing.current = true
-    clearTimeout(syncTimer.current)
-    syncTimer.current = setTimeout(() => { isSyncing.current = false }, 450)
-  }
-
-  const handleTitleScroll = useCallback(() => {
-    if (isSyncing.current) return
-    const idx = calcScrollOpacities(listRef.current, itemRefs.current, TITLE_OPTS)
-    lockSync()
-    snapToIdx(imgListRef.current, imgItemRefs.current, idx, IMAGE_OPTS)
-  }, [])
-
-  const handleImageScroll = useCallback(() => {
-    if (isSyncing.current) return
-    const idx = calcScrollOpacities(imgListRef.current, imgItemRefs.current, IMAGE_OPTS)
-    lockSync()
-    snapToIdx(listRef.current, itemRefs.current, idx, TITLE_OPTS)
-  }, [])
-
-  // Apply initial styles on mount; clear stale refs when project list changes
   useEffect(() => {
-    itemRefs.current = itemRefs.current.slice(0, filtered.length)
-    imgItemRefs.current = imgItemRefs.current.slice(0, filtered.length)
-    if (listRef.current) calcScrollOpacities(listRef.current, itemRefs.current, TITLE_OPTS)
-    snapToIdx(imgListRef.current, imgItemRefs.current, 0, IMAGE_OPTS)
+    applyScale(bodyRef.current, rowRefs.current)
   }, [filtered.length])
 
-  // Clean up pending sync timer on unmount
-  useEffect(() => () => clearTimeout(syncTimer.current), [])
+  function onScroll() {
+    applyScale(bodyRef.current, rowRefs.current)
+  }
 
   return (
     <div className="pv_section">
@@ -124,48 +80,30 @@ function ProjectsList({ category, onBack }) {
       {filtered.length === 0 ? (
         <div className="pv_empty">No {category} projects added yet.</div>
       ) : (
-        <div className="pv_body">
-          <div className="pv_list_wrap">
-            <div className="pv_fade pv_fade--top" />
-            <div className="pv_list" ref={listRef} onScroll={handleTitleScroll}>
-              {filtered.map((project, i) => (
-                <button
-                  key={project.id}
-                  ref={el => { itemRefs.current[i] = el }}
-                  className="pv_item"
-                  onClick={() => openProjectLink(project)}
-                  style={{ opacity: 0.12 }}
-                >
-                  <span className="pv_item_title">{project.title}</span>
-                  {project.tags?.length > 0 && (
-                    <span className="pv_item_tags">{project.tags.join(' · ')}</span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <div className="pv_fade pv_fade--bottom" />
-          </div>
-
-          <div className="pv_image_panel">
-            <div className="pv_fade pv_fade--top" />
-            <div className="pv_img_list" ref={imgListRef} onScroll={handleImageScroll}>
-              {filtered.map((project, i) => (
-                <button
-                  key={project.id}
-                  ref={el => { imgItemRefs.current[i] = el }}
-                  className="pv_img_item"
-                  style={{ opacity: 0.15 }}
-                  onClick={() => openProjectLink(project)}
-                >
-                  {project.imageUrl
-                    ? <img src={project.imageUrl} alt={project.title} className="pv_image" />
-                    : <div className="pv_image_placeholder" />
-                  }
-                </button>
-              ))}
-            </div>
-            <div className="pv_fade pv_fade--bottom" />
-          </div>
+        <div className="pv_body" ref={bodyRef} onScroll={onScroll}>
+          <div className="pv_row_spacer" />
+          {filtered.map((project, i) => (
+            <button
+              key={project.id}
+              ref={el => { rowRefs.current[i] = el }}
+              className="pv_row"
+              onClick={() => openProjectLink(project)}
+            >
+              <div className="pv_row_info">
+                <span className="pv_row_title">{project.title}</span>
+                {project.tags?.length > 0 && (
+                  <span className="pv_row_tags">{project.tags.join(' · ')}</span>
+                )}
+              </div>
+              <div className="pv_row_image">
+                {project.imageUrl
+                  ? <img src={project.imageUrl} alt={project.title} />
+                  : <div className="pv_row_placeholder" />
+                }
+              </div>
+            </button>
+          ))}
+          <div className="pv_row_spacer" />
         </div>
       )}
     </div>
