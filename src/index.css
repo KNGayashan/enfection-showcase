@@ -136,7 +136,7 @@ a:hover {
   transform: translateY(calc(-100% - 20px));
 }
 .navbar--scrolled {
-  background: rgba(236, 236, 236, 0.8);
+  background: rgb(236, 236, 236);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 2px 8px var(--border);
