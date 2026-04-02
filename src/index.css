@@ -1226,7 +1226,7 @@ a:hover {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
 .adv_card--glass {
-  background: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.55);
