@@ -1,4 +1,4 @@
-const TO = 'nilanga18@gmail.com'
+const TO = 'nilangagayashan18@gmail.com'
 
 function handleContactSubmit(e) {
   e.preventDefault()
